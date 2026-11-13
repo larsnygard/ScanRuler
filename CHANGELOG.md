@@ -7,6 +7,17 @@ saves carry the same number as `appVersion`. How a release is cut is in
 
 ## Unreleased
 
+- **A CAD workspace** (2026-11-13). Model a solid part from scratch — no scan
+  needed: boxes, cylinders and spheres, sketches on the datum planes pulled
+  into solids with extrude, revolve and loft, booleans, fillets and chamfers,
+  shells, linear and circular patterns, mirrors, and bodies imported from STEP
+  and STL. The list of features is the part, and every number on it is
+  editable; the part is built by the OCCT kernel in its own worker, shown in
+  the viewport, saved in the project as the list (solids are built again on
+  open), and exported as STEP, STL or 3MF. Agents work the same way through
+  the `cad.*` commands, headless included, with a guide (`guide.read { id:
+  cad }`). The kernel (~10 MB, WebAssembly) loads with the workspace. The
+  plugin is `plugins/cad/` (AGPL); OCCT is credited in the imprint.
 - **Contributors are credited** (2026-11-01). Each publish to this repository now
   names the people whose work it brings as co-authors, starting with Jozkah and
   Starzrng. CONTRIBUTING.md says how it works.

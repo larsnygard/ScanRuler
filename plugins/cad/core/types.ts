@@ -25,6 +25,9 @@ export interface ShapeMesh {
 export interface BuiltShape {
   /** The worker's handle id, stable between builds that did not change it. */
   key: number
+  /** The feature that made this body, and what the panel calls it. */
+  id: number
+  name: string
   mesh: ShapeMesh
   /** Edges sampled as polylines: [pointStart, pointCount] pairs into
    *  points (xyz interleaved), one pair per edge, in the order `indexes`

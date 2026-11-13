@@ -533,11 +533,11 @@ export class CadKernel {
 
   /** A body whole, for the page: mesh, edges, measures. The handle stays
    *  in the arena — the export asks for it by id; the service tracks it. */
-  describe(solid: H, deflection: number): BuiltShape {
+  describe(solid: H, deflection: number, id: number, name: string): BuiltShape {
     const mesh = this.mesh(solid, deflection)
     const edges = this.edges(solid, deflection)
     const m = this.measures(solid)
-    return { key: solid, mesh, edges, volume: m.volume, area: m.area, bounds: m.bounds, closed: m.closed }
+    return { key: solid, id, name, mesh, edges, volume: m.volume, area: m.area, bounds: m.bounds, closed: m.closed }
   }
 
   /** The face hashes of a solid, in sub-shape order. */

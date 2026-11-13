@@ -1,0 +1,98 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* The CAD workspace's own rules, on top of the app's stylesheet
+   (src/styles.css), whose tokens and base rules they use. */
+
+/* The list of features: one to a line, the open one's fields under it. */
+.cad-features {
+  display: grid;
+  gap: 4px;
+}
+
+.cad-feature {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel-raised, transparent);
+}
+
+.cad-feature.on {
+  border-color: var(--accent);
+}
+
+.cad-feature-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+}
+
+.cad-feature-head .cad-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.cad-feature-head .cad-name:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.cad-ok {
+  font-size: 10.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.cad-ok.bad {
+  color: var(--red, #d33);
+}
+
+.cad-feature .icobtn {
+  padding: 2px;
+}
+
+.cad-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+  padding: 6px 8px 8px;
+  border-top: 1px solid var(--line);
+}
+
+.cad-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.cad-field input,
+.cad-field select {
+  width: 74px;
+}
+
+.cad-empty {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 6px 0 2px;
+}
+
+.cad-export {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cad-export .btn {
+  flex: 1;
+}

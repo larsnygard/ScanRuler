@@ -860,6 +860,15 @@ const ICONS = {
       <path className="i-a" d="M11 13 3 18m8-5L6 7m5 6 3-9m-3 9 10-4m-10 4 8 6" />
     </>
   ),
+  // The CAD tab: the solid drawn as it is modelled — a box, its far edges
+  // showing through — with the sketch square it was pulled from beside it.
+  wsCad: (
+    <>
+      <path className="i-g" d="M4 8.5 12 4l8 4.5V17l-8 4.5L4 17Z" />
+      <path className="i-a" d="M4 8.5 12 13l8-4.5M12 13v8.5" />
+      <path className="i-th i-ds" d="M4 8.5v8.5M20 8.5v8.5" />
+    </>
+  ),
   // Reduce: the scan's triangles, fine where they were and few and
   // large where the reduction took them; the part with the specks it came
   // with, which the key takes off.

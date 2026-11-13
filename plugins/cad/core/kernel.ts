@@ -440,9 +440,11 @@ export class CadKernel {
     }
   }
 
-  mirror(solid: H, plane: Plane): H {
+  mirror(solid: H, plane: Plane, opts: { fuse?: boolean } = {}): H {
     try {
-      return this.occt.mirror(solid, kv(plane.origin), kv(plane.zAxis))
+      const mirrored = this.occt.mirror(solid, kv(plane.origin), kv(plane.zAxis))
+      if (!opts.fuse) return mirrored
+      return this.occt.fuse(solid, mirrored)
     } catch (e) {
       throw wrap(e)
     }

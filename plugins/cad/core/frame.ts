@@ -22,12 +22,16 @@ export const Z: Vec3 = [0, 0, 1]
  *  and Y with its normal along +Z, `yx` the same span and its normal
  *  along +Y — the plane you sketch on when you look along −Z, and so on. */
 export const DATUM_PLANES: Record<DatumPlane, Plane> = {
+  // The three primary planes and the plane seen from the other side. Each
+  // pair shares its plane; the names read the x-axis first: the 'xy' plane
+  // runs its x along part X, the 'yx' along part X seen from +Y, and so
+  // on. Every frame is right-handed (y = z × x).
   xy: { origin: ORIGIN, xAxis: X, zAxis: Z },
   yx: { origin: ORIGIN, xAxis: X, zAxis: Y },
-  xz: { origin: ORIGIN, xAxis: X, zAxis: [0, 0, -1] },
-  zx: { origin: ORIGIN, xAxis: Z, zAxis: X },
-  yz: { origin: ORIGIN, xAxis: Y, zAxis: Z },
-  zy: { origin: ORIGIN, xAxis: Z, zAxis: Y },
+  xz: { origin: ORIGIN, xAxis: X, zAxis: [0, -1, 0] },
+  zx: { origin: ORIGIN, xAxis: Z, zAxis: Y },
+  yz: { origin: ORIGIN, xAxis: Y, zAxis: X },
+  zy: { origin: ORIGIN, xAxis: Z, zAxis: [-1, 0, 0] },
 }
 
 export const datumPlane = (name: DatumPlane): Plane => DATUM_PLANES[name]

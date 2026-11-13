@@ -27,17 +27,17 @@ Architecture (decided 2026-11-13, after reading the tree):
 ## Milestones
 
 - [x] **M0 — Plan + branch.** This file; branch `cad-module` from main (78d33d4).
-- [~] **M1 — Kernel adapter** `core/kernel.ts` (+`kernelTypes.ts`,
+- [x] **M1 — Kernel adapter** `core/kernel.ts` (+`kernelTypes.ts`,
   `wasmSupport.ts`): occt-wasm wrapped to ~25 operations the module speaks
   (prisms, revolve, loft, booleans, fillet/chamfer, shell, patterns,
   transforms, mesh, STEP/STL in-out, volume/area/bbox, closedness),
-  dynamic import, handle release discipline. Unit tests in Node.
-- [ ] **M2 — Pure geometry** `core/`: transforms/planes
+  dynamic import, handle release discipline. Unit tests in Node (fa034e3).
+- [x] **M2 — Pure geometry** `core/`: transforms/planes
   (`frame.ts`), 2D sketch entities + loop closure + tessellation
   (`sketch2d.ts`), 2D constraint solver (`solver2d.ts`: coincident,
   horizontal/vertical, parallel, perpendicular, distance, radius, tangent,
   equal, fixed — Newton-Raphson over point DOFs), profile/loop sorting
-  (`loops2d.ts`). Pure, Node-testable.
+  (`loops2d.ts`). Pure, Node-testable (fa034e3).
 - [ ] **M3 — Part builder + build engine** `core/partBuilder.ts`,
   `core/build.ts`, `state/cadStore.ts`: typed feature list
   (primitive/sketch/extrude/revolve/loft/boolean/fillet/chamfer/

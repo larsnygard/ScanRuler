@@ -9,6 +9,9 @@ import { useEffect, useState } from 'react'
 import type { PluginHost, PluginRuntime } from '../../../src/plugins/api'
 import { useShell } from '../../../src/state/shellStore'
 import { CadPanel } from '../ui/CadPanel'
+import { SketchSheet } from '../ui/SketchSheet'
+import { useSketch } from '../state/sketchStore'
+import { useCad } from '../state/cadStore'
 import { createCadSession, installCadSession } from './cadSession'
 import { exportCadFile } from './cadExport'
 
@@ -18,13 +21,23 @@ export function useCadPlugin(_host: PluginHost): PluginRuntime {
   // hands a local one (plugin.ts) and the same code runs under Node.
   const [session] = useState(() => createCadSession())
   useEffect(() => installCadSession(session), [session])
+  // In development the sheet's store and the part's are reachable from
+  // the console and the e2e scripts, as the other workspaces' stores are.
+  useEffect(() => {
+    if (import.meta.env.DEV) (window as unknown as { __cad?: { sketch: typeof useSketch; cad: typeof useCad } }).__cad = { sketch: useSketch, cad: useCad }
+  }, [])
   // The tab's own switch re-renders this hook, so the scene is made when
   // the workspace first comes on screen.
   useShell((s) => s.workspace)
+  // A sketch open on the sheet: the 2D sheet stands over the viewport
+  // (the 3D view is put away under it — see the view bar's model key).
+  const editing = useSketch((s) => s.openId) !== null
   return {
     // No front door: the workspace shows its part with no scan loaded —
     // the part is built from its first feature.
     startPane: null,
     panel: <CadPanel onExport={(format) => void exportCadFile(format)} />,
+    stage: editing ? <SketchSheet /> : null,
+    hideViewport: editing,
   }
 }

@@ -70,7 +70,8 @@
     "e2e:fit-chains": "node plugins/reverse/scripts/e2e-fit-chains.mjs",
     "e2e:reverse-blank": "node plugins/reverse/scripts/e2e-reverse-blank.mjs",
     "e2e:reverse-select": "node plugins/reverse/scripts/e2e-reverse-select.mjs",
-    "e2e:reverse-save": "node plugins/reverse/scripts/e2e-reverse-save.mjs"
+    "e2e:reverse-save": "node plugins/reverse/scripts/e2e-reverse-save.mjs",
+    "e2e:sketch": "node plugins/cad/scripts/e2e-sketch-sheet.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",

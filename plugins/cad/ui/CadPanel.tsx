@@ -8,6 +8,7 @@ import type { ReactNode } from 'react'
 import { Icon } from '../../../src/ui/icons'
 import { InfoDot } from '../../../src/ui/InfoDot'
 import { useCad, nextId, starterFeatures, type CadTool } from '../state/cadStore'
+import { useSketch } from '../state/sketchStore'
 import type { Feature } from '../core/part'
 import { useStore } from '../../../src/state/store'
 import { count, fmtVol } from './cadFormat'
@@ -182,6 +183,7 @@ export function CadPanel({ onExport }: { onExport: (format: 'step' | 'stl') => v
   const setSelected = useCad((s) => s.setSelected)
   const results = useCad((s) => s.results)
   const bodies = useCad((s) => s.bodies)
+  const openSketch = useSketch((s) => s.open)
   const fileName = useStore((s) => s.fileName)
 
   const add = (t: CadTool) => {
@@ -259,6 +261,11 @@ export function CadPanel({ onExport }: { onExport: (format: 'step' | 'stl') => v
                     <button className="cad-name" onClick={() => setSelected(f.id)} title={f.name}>
                       {f.name}
                     </button>
+                    {f.kind === 'sketch' && (
+                      <button className="icobtn" title="Edit the sketch on the sheet: draw, drag, constrain" data-test="cad-sketch-edit" onClick={() => openSketch(f.id)}>
+                        <Icon name="sketch" />
+                      </button>
+                    )}
                     <span className={`cad-ok${ok === false ? ' bad' : ''}`}>{ok === false ? '✕' : body ? `${fmtVol(body.volume)}` : ''}</span>
                     <button className="icobtn" title="Move up" onClick={() => move(f.id, -1)} disabled={features[0].id === f.id}>
                       <Icon name="rotateCcw" />

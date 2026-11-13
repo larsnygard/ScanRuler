@@ -17,6 +17,16 @@ vi.setConfig({ testTimeout: 180_000 })
 interface BodyOut { id: number; name: string; volume: number; closed: boolean }
 interface StatusOut { name: string; status: string; features: { index: number; kind: string; ok: boolean | null }[]; bodies: BodyOut[]; message?: string }
 interface ChangeOut { built: number; blocked: number; added?: number; message?: string }
+interface SketchOut {
+  index: number
+  name: string
+  plane: string
+  built: boolean
+  entities: { i: number; kind: string; points: { index: number; at: [number, number] }[] }[]
+  points: { index: number; at: [number, number] }[]
+  constraints: { kind: string }[]
+  notes?: string[]
+}
 
 let headless: Headless
 let session: CadSession
@@ -129,6 +139,66 @@ describe('the verbs', () => {
     const st = await status()
     expect(st.features[1].ok).toBe(false)
     expect(st.message).toBeTruthy()
+  })
+
+  it('reads a sketch back, points named by solver index', async () => {
+    await run('cad.sketch', { entities: [{ from: [0, 0], to: [10, 0] }, { from: [10, 0], to: [10, 10] }, { from: [10, 10], to: [0, 10] }, { from: [0, 10], to: [0, 0] }], name: 'Plate' })
+    const s = await run<SketchOut>('cad.sketch_get', { sketch: 0 })
+    expect(s.name).toBe('Plate')
+    expect(s.plane).toBe('xy')
+    expect(s.entities).toHaveLength(4)
+    expect(s.points).toHaveLength(8)
+    expect(s.points[0].at).toEqual([0, 0])
+    expect(s.entities[0].points.map((p) => p.index)).toEqual([0, 1])
+    expect(s.built).toBe(true)
+  })
+
+  it('edits a sketch: add, weld, constrain, and the extrude pulls it', async () => {
+    // Draw an open square, weld the corner the drawing left apart,
+    // constrain a side, move a point — the sheet's whole pass, in one
+    // command — then pull it 5 mm.
+    await run('cad.sketch', { entities: [{ from: [0, 0], to: [20, 0] }, { from: [20, 0], to: [20, 20] }, { from: [20, 20], to: [0, 20] }, { from: [0, 20], to: [1, 0] }] })
+    const e = await run<SketchOut & { notes?: string[] }>('cad.sketch_edit', {
+      sketch: 0,
+      weld: [{ point: 7, onto: 0 }],
+      constrain: [{ horizontal: 0 }],
+      infer: true,
+    })
+    expect(e.constraints.some((c) => c.kind === 'coincident')).toBe(true)
+    expect(e.constraints.some((c) => c.kind === 'horizontal')).toBe(true)
+    expect(e.built).toBe(true)
+    const out = await run<ChangeOut>('cad.extrude', { sketch: 0, depth: 5 })
+    expect(out.built).toBe(2)
+    const st = await status()
+    // The closed 20×20 plate at 5 mm: 2000 mm³.
+    expect(st.bodies[0].volume).toBeCloseTo(2000, 0)
+    expect(st.bodies[0].closed).toBe(true)
+  })
+
+  it('edits a sketch by adding a rectangle and moving a point', async () => {
+    await run('cad.sketch', { entities: [{ from: [0, 0], to: [1, 1] }] })
+    // Take the drawn line away, leaving a bare sketch to draw on.
+    await run('cad.sketch_edit', { sketch: 0, deleteEntities: [0] })
+    const e = await run<SketchOut>('cad.sketch_edit', { sketch: 0, add: [{ rectangle: [0, 0, 10, 6] }] })
+    expect(e.entities).toHaveLength(4)
+    expect(e.constraints).toHaveLength(8)
+    expect(e.built).toBe(true)
+    // Drag one corner: the welds and the axes solve the rest along.
+    const m = await run<SketchOut>('cad.sketch_edit', { sketch: 0, move: [{ point: 3, x: 8, y: 5 }] })
+    expect(m.points[3].at[0]).toBeCloseTo(8, 2)
+    expect(m.built).toBe(true)
+  })
+
+  it('refuses an edit that names a point off the sketch', async () => {
+    await run('cad.sketch', { entities: [{ from: [0, 0], to: [10, 0] }] })
+    const e = await refused('cad.sketch_edit', { sketch: 0, move: [{ point: 40, x: 1, y: 1 }] })
+    expect(e.code).toBe('invalid_input')
+  })
+
+  it('refuses to edit a box as a sketch', async () => {
+    await run('cad.box', {})
+    const e = await refused('cad.sketch_edit', { sketch: 0, infer: true })
+    expect(e.code).toBe('invalid_input')
   })
 
   it('writes the part as a file', async () => {

@@ -8,6 +8,7 @@ import { pick, registerHistory } from '../../src/state/historyStore'
 import { useShell } from '../../src/state/shellStore'
 import { cadProjectSection } from './app/projectSection'
 import { cadBusy, cadCommands, describeCad } from './app/cadCommands'
+import { sketchCommands } from './app/sketchCommands'
 import { useCadPlugin } from './app/useCadPlugin'
 import { useCad } from './state/cadStore'
 import { CadNotices } from './ui/CadNotices'
@@ -30,7 +31,7 @@ const plugin: ScanRulerPlugin = {
     // What an agent works through: the verbs under cad.*, the workspace's
     // part of the session's readout, and what its kernel is busy with —
     // loading, or building the bodies — so no command runs over it.
-    registerCommands('cad', cadCommands)
+    registerCommands('cad', [...cadCommands, ...sketchCommands])
     registerStateSection('cad', describeCad)
     registerBusy('cad', cadBusy, [useCad])
     // The list of features is the part: a change to it — the panel's

@@ -28,7 +28,7 @@ function session() {
  *  that stands as it was is refused. The run sits inside the registry's
  *  history step (its label, "Agent: …"): the change is the step, the
  *  build awaited, so the answer speaks of the part as it stands. */
-async function apply(make: (features: Feature[]) => Feature[] | null) {
+export async function applyCad(make: (features: Feature[]) => Feature[] | null) {
   const s = session()
   const before = c().features
   const next = make(structuredClone(before))
@@ -145,7 +145,7 @@ const box: Command<{ width?: number; depth?: number; height?: number; name?: str
     for (const [v, what] of [[width, 'width'], [depth, 'depth'], [height, 'height']] as const) {
       if (v !== undefined && !(v > 0)) invalid(`The ${what} must be more than zero.`)
     }
-    return apply((features) => {
+    return applyCad((features) => {
       features.push({ id: nextId(features), kind: 'box', name: name || 'Box', width: width ?? 40, depth: depth ?? 30, height: height ?? 20 })
       return features
     })
@@ -159,7 +159,7 @@ const cylinder: Command<{ radius?: number; height?: number; name?: string }> = {
     'Add a cylinder to the CAD part, standing on the datum’s origin (its axis along Z): radius and height in millimetres. Built at once.',
   input: obj({ radius: num('Radius in mm, over zero.', { exclusiveMinimum: 0 }), height: num('Height in mm, over zero.', { exclusiveMinimum: 0 }), name: nameField }),
   run: async ({ radius, height, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       features.push({ id: nextId(features), kind: 'cylinder', name: name || 'Cylinder', radius: radius ?? 12, height: height ?? 30 })
       return features
     }),
@@ -171,7 +171,7 @@ const sphere: Command<{ radius?: number; name?: string }> = {
   description: 'Add a sphere to the CAD part, centred on the datum’s origin: radius in millimetres. Built at once.',
   input: obj({ radius: num('Radius in mm, over zero.', { exclusiveMinimum: 0 }), name: nameField }),
   run: async ({ radius, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       features.push({ id: nextId(features), kind: 'sphere', name: name || 'Sphere', radius: radius ?? 15 })
       return features
     }),
@@ -202,7 +202,7 @@ const sketch: Command<{ plane?: DatumPlane; offset?: number; shift?: [number, nu
       if (e.center && e.radius) return { kind: 'circle', center: e.center, radius: e.radius }
       return invalid('An entity is a line (from, to) or a circle (center, radius).')
     })
-    return apply((features) => {
+    return applyCad((features) => {
       features.push({
         id: nextId(features),
         kind: 'sketch',
@@ -227,7 +227,7 @@ const extrude: Command<{ sketch: number; depth: number; name?: string }> = {
   input: obj({ sketch: featureSchema, depth: num('Depth in mm; negative through the plane.'), name: nameField }, ['sketch', 'depth']),
   run: async ({ sketch, depth, name }) => {
     if (depth === 0) invalid('The depth is zero — the pad would be nothing.')
-    return apply((features) => {
+    return applyCad((features) => {
       requireId(features, sketch, 'sketch')
       features.push({ id: nextId(features), kind: 'extrude', name: name || 'Extrude', sketch, depth })
       return features
@@ -243,7 +243,7 @@ const boolean: Command<{ op: 'fuse' | 'cut' | 'intersect'; a: number; b: number;
   input: obj({ op: enumOf(['fuse', 'cut', 'intersect'] as const, 'fuse joins, cut takes b out of a, intersect keeps what they share.'), a: featureSchema, b: featureSchema, name: nameField }, ['op', 'a', 'b']),
   run: async ({ op, a, b, name }) => {
     if (a === b) invalid('The two bodies are one and the same feature.')
-    return apply((features) => {
+    return applyCad((features) => {
       requireId(features, a, 'body')
       requireId(features, b, 'body')
       features.push({ id: nextId(features), kind: 'boolean', name: name || (op === 'fuse' ? 'Fuse' : op[0].toUpperCase() + op.slice(1)), op: op as BooleanOp, a, b })
@@ -259,7 +259,7 @@ const fillet: Command<{ body: number; radius: number; edges?: EdgeSelection; nam
     'Round the edges of a body to a radius: its feature index, the radius in mm, and which edges — all of them, or the one nearest a point in the part (a body clicked in the viewport hands the point back). A radius that does not fit fails that feature alone, saying why; the rest of the part stands built.',
   input: obj({ body: featureSchema, radius: num('The radius, mm, over zero.', { exclusiveMinimum: 0 }), edges: edgesSel, name: nameField }, ['body', 'radius']),
   run: async ({ body, radius, edges, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       requireId(features, body, 'body')
       features.push({ id: nextId(features), kind: 'fillet', name: name || 'Fillet', body, radius, edges: edges ?? { which: 'all' } })
       return features
@@ -272,7 +272,7 @@ const chamfer: Command<{ body: number; distance: number; edges?: EdgeSelection; 
   description: 'Bevel the edges of a body: its feature index, the set-back distance in mm, and which edges (all, or nearest a point). One feature; the body it reads stays standing.',
   input: obj({ body: featureSchema, distance: num('The set-back, mm, over zero.', { exclusiveMinimum: 0 }), edges: edgesSel, name: nameField }, ['body', 'distance']),
   run: async ({ body, distance, edges, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       requireId(features, body, 'body')
       features.push({ id: nextId(features), kind: 'chamfer', name: name || 'Chamfer', body, distance, edges: edges ?? { which: 'all' } })
       return features
@@ -286,7 +286,7 @@ const shell: Command<{ body: number; thickness: number; open?: FaceSelection; na
     'Hollow a body to a wall of a set thickness, open through a face (the topmost, the bottommost, or none — a sealed cavity): its feature index, wall in mm, opening. A shelled box is a lid, a housing, a printed shell.',
   input: obj({ body: featureSchema, thickness: num('The wall, mm, over zero.', { exclusiveMinimum: 0 }), open: faceSel, name: nameField }, ['body', 'thickness']),
   run: async ({ body, thickness, open, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       requireId(features, body, 'body')
       features.push({ id: nextId(features), kind: 'shell', name: name || 'Shell', body, thickness, open: open ?? { which: 'top' } })
       return features
@@ -311,7 +311,7 @@ const pattern: Command<{ body: number; kind: 'linear' | 'circular' | 'mirror'; d
     name: nameField,
   }, ['body', 'kind']),
   run: async ({ body, kind, direction, spacing, count, center, axis, angleDeg, plane, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       requireId(features, body, 'body')
       const id = nextId(features)
       const nm = name || (kind === 'linear' ? 'Pattern' : kind === 'circular' ? 'Circular pattern' : 'Mirror')
@@ -335,7 +335,7 @@ const revolve: Command<{ sketch: number; axis?: 'x' | 'y' | 'z'; angleDeg?: numb
     'Spin a sketch about an axis into a solid (360 a full turn — a turned part; 90 a quarter): the sketch’s feature index, the axis, the angle. The profile is spun at once; the axis lies in the sketch’s plane.',
   input: obj({ sketch: featureSchema, axis: enumOf(['x', 'y', 'z'] as const, 'The axis spun about, in the sketch’s plane.'), angleDeg: num('The angle swept, degrees.', { exclusiveMinimum: 0, maximum: 360 }), name: nameField }, ['sketch']),
   run: async ({ sketch, axis, angleDeg, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       requireId(features, sketch, 'sketch')
       features.push({ id: nextId(features), kind: 'revolve', name: name || 'Revolve', sketch, angleDeg: angleDeg ?? 360, axis: axis ?? 'z' })
       return features
@@ -349,7 +349,7 @@ const loft: Command<{ sketches: number[]; ruled?: boolean; name?: string }> = {
     'Stretch a solid between sketches (their feature indices, at least two): each settled outline to the next. Two squares of a different size make a frustum; two circles, a cone. ruled straight ruled walls, not smoothed.',
   input: obj({ sketches: arr(featureSchema, 'The sketches, first to last.', { minItems: 2 }), ruled: bool('Straight ruled walls, not smoothed.'), name: nameField }, ['sketches']),
   run: async ({ sketches, ruled, name }) =>
-    apply((features) => {
+    applyCad((features) => {
       for (const s of sketches) requireId(features, s, 'sketch')
       features.push({ id: nextId(features), kind: 'loft', name: name || 'Loft', sketches, ruled: ruled ?? false })
       return features
@@ -367,7 +367,7 @@ const set: Command<{ feature: number; width?: number; depth?: number; height?: n
     const keys = ['width', 'depth', 'height', 'radius', 'distance', 'thickness', 'spacing', 'count', 'angleDeg', 'offset', 'plane', 'shift', 'direction', 'name'] as const
     const given = keys.filter((k) => p[k] !== undefined)
     if (given.length === 0) invalid('Name at least one field to change.')
-    return apply((features) => {
+    return applyCad((features) => {
       requireId(features, id, 'feature')
       const f = features.find((x) => x.id === id)!
       for (const k of given) {
@@ -391,7 +391,7 @@ const remove: Command<{ feature: number }> = {
     'Take a feature off the CAD part by its index, and everything made of it with it: the list closes the gap, the indices renumber, and the part is built again.',
   input: obj({ feature: featureSchema }, ['feature']),
   run: async ({ feature }) =>
-    apply((features) => {
+    applyCad((features) => {
       requireId(features, feature, 'feature')
       const doomed = new Set<number>([feature])
       let grew = true
@@ -461,7 +461,7 @@ const importPart: Command<{ bytes: string; format: 'step' | 'stl' }> = {
     const s = session()
     const raw = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0))
     const staged = await s.stage(raw, format)
-    const out = await apply((features) => {
+    const out = await applyCad((features) => {
       features.push({ id: nextId(features), kind: 'component', name: 'Import', body: staged.key, placement: { rotation: [1, 0, 0, 0, 1, 0, 0, 0, 1], translation: [0, 0, 0] } })
       return features
     })

@@ -26,8 +26,8 @@ Architecture (decided 2026-11-13, after reading the tree):
 
 ## Milestones
 
-- [ ] **M0 — Plan + branch.** This file; branch `cad-module` from master.
-- [ ] **M1 — Kernel adapter** `core/kernel.ts` (+`kernelTypes.ts`,
+- [x] **M0 — Plan + branch.** This file; branch `cad-module` from main (78d33d4).
+- [~] **M1 — Kernel adapter** `core/kernel.ts` (+`kernelTypes.ts`,
   `wasmSupport.ts`): occt-wasm wrapped to ~25 operations the module speaks
   (prisms, revolve, loft, booleans, fillet/chamfer, shell, patterns,
   transforms, mesh, STEP/STL in-out, volume/area/bbox, closedness),

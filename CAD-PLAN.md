@@ -85,14 +85,22 @@ Architecture (decided 2026-11-13, after reading the tree):
   (`plugins/*/worker.ts`) picked it up as a worker plugin (`undefined`
   default export) and broke ~100 core command tests. Renamed
   `kernelWorker.ts`.
-- [ ] **M10 — Browser check** `plugins/cad/scripts/e2e-cad.mjs` +
-  `ci.json`: open app, switch to CAD, box → fillet → export via UI/agent,
-  screenshot; run in `e2e:ci`.
-- [ ] **M11 — Deploy + push**: `./sendscanruler.sh` to snart.com/scanruler,
-  verify live page loads the CAD tab (browser against the live URL),
-  push branch + merge to main on larsnygard/ScanRuler.
-- [ ] **M12 — Report**: progress recorded in this file per milestone;
-  summary with what was verified.
+- [~] **M10 — Browser check**: done by hand on the dev server and on the
+  live URL — CAD tab opens, Starter box builds (kernel `ready`, 24.0 ml),
+  sketch on XY + Extrude (4.0 ml, 3 features), screenshot kept. The
+  scripted check (`plugins/cad/scripts/e2e-cad.mjs` in `e2e:ci`) is not
+  written yet — the one open piece.
+- [x] **M11 — Deploy + push** (a92445c): `./sendscanruler.sh` →
+  snart.com/scanruler (65 files, Varnish purged 200); the live page
+  verified in a real browser: CAD tab → Starter box → kernel `ready` →
+  Box 24.0 ml. The wasm ships (`occt-wasm-3z6gMIX_.wasm`). `cad-module`
+  merged fast-forward into `main` and pushed (origin/main = a92445c).
+  The deploy caught one browser-only bug, fixed in a92445c: the worker
+  fetched the wasm by a relative path and the SPA fallback answered it
+  with HTML.
+- [x] **M12 — Report**: this file carries the milestones with the commits
+  that closed them; the summary is in the session and CHANGELOG.md
+  (Unreleased). What is left: the scripted browser check (M10).
 
 ## Standing rules
 

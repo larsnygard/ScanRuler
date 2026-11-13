@@ -41,15 +41,23 @@ export class CadService {
   /** What a build is working on, for the status line. */
   private step: string | null = null
 
-  constructor(private emit: (e: CadEvent) => void = () => {}) {}
+  /** @param wasm where the kernel's binary is — the URL the bundler gave
+   *   the file (the worker's own), a path a Node test hands in, or nothing
+   *   to let the package look for it beside its glue, which a page's SPA
+   *   fallback answers with HTML.
+   * @param emit what a build is at, told as it goes. */
+  constructor(
+    private emit: (e: CadEvent) => void = () => {},
+    private wasm?: string | Uint8Array,
+  ) {}
 
   /** The kernel, fetched and compiled once — 5 MB, only when the first
-   *  request comes. `wasm` lets a test hand the binary in. */
-  private async ensure(wasm?: string | Uint8Array): Promise<CadKernel> {
+   *  request comes. */
+  private async ensure(): Promise<CadKernel> {
     if (this.kernel) return this.kernel
     if (!this.loading) {
       this.emit({ kind: 'busy', text: 'Loading the CAD kernel…' })
-      this.loading = CadKernel.load(wasm).then(
+      this.loading = CadKernel.load(this.wasm).then(
         (k) => {
           this.kernel = k
           this.loading = null
